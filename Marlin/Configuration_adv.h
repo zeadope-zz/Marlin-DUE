@@ -49,7 +49,7 @@
 
 //  extruder run-out prevention. 
 //if the machine is idle, and the temperature over MINTEMP, every couple of SECONDS some filament is extruded
-//#define EXTRUDER_RUNOUT_PREVENT  
+#define EXTRUDER_RUNOUT_PREVENT  
 #define EXTRUDER_RUNOUT_MINTEMP 190  
 #define EXTRUDER_RUNOUT_SECONDS 30.
 #define EXTRUDER_RUNOUT_ESTEPS 14. //mm filament
@@ -82,7 +82,7 @@
 #define X_HOME_RETRACT_MM 5 
 #define Y_HOME_RETRACT_MM 5 
 #define Z_HOME_RETRACT_MM 1 
-//#define QUICK_HOME  //if this is defined, if both x and y are to be homed, a diagonal move will be performed initially.
+#define QUICK_HOME  //if this is defined, if both x and y are to be homed, a diagonal move will be performed initially.
 
 #define AXIS_RELATIVE_MODES {false, false, false, false}
 
@@ -108,7 +108,7 @@
 // Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
 // of the buffer and all stops. This should not be much greater than zero and should only be changed
 // if unwanted behavior is observed on a user's machine when running at very slow speeds.
-#define MINIMUM_PLANNER_SPEED 0.05// (mm/sec)
+#define MINIMUM_PLANNER_SPEED 0.05 // (mm/sec)
 
 //===========================================================================
 //=============================Additional Features===========================
@@ -161,6 +161,13 @@ const int dropsegments=5; //everything with less than this number of steps will 
 
 #ifdef ULTIPANEL
  #undef SDCARDDETECTINVERTED
+#endif
+
+//untested z-probe adjusting
+#define ZADJUST
+#ifdef ZADJUST
+ #define ZADJUST_GRIDPOINTS 3
+
 #endif
 //===========================================================================
 //=============================Buffers           ============================

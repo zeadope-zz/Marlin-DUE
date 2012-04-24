@@ -177,6 +177,9 @@ static unsigned long stoptime=0;
 static uint8_t tmp_extruder;
 
 bool Stopped=false;
+#ifdef ZADJUST
+  float zadjust_grid[ZADJUST_GRIDPOINTS*ZADJUST_GRIDPOINTS]={0,0,0, 0,0,0, 0,0,1}; //2d height offset grid
+#endif
 
 //===========================================================================
 //=============================ROUTINES=============================
@@ -1334,9 +1337,34 @@ void ClearToSend()
 void get_coordinates()
 {
   for(int8_t i=0; i < NUM_AXIS; i++) {
-    if(code_seen(axis_codes[i])) destination[i] = (float)code_value() + (axis_relative_modes[i] || relative_mode)*current_position[i];
+    if(code_seen(axis_codes[i])) 
+    {
+      destination[i] = (float)code_value() + (axis_relative_modes[i] || relative_mode)*current_position[i];
+      
+    }
     else destination[i] = current_position[i]; //Are these else lines really needed?
-  }
+  } 
+  #ifdef ZADJUST
+      int8_t xgrid,ygrid;
+      xgrid=(destination[X_AXIS]-X_HOME_POS)*(ZADJUST_GRIDPOINTS-1)/X_MAX_LENGTH;
+      ygrid=(destination[Y_AXIS]-Y_HOME_POS)*(ZADJUST_GRIDPOINTS-1)/Y_MAX_LENGTH;
+      float wx=(destination[X_AXIS]-X_HOME_POS)-xgrid*X_MAX_LENGTH/(ZADJUST_GRIDPOINTS-1);
+      float wy=(destination[Y_AXIS]-Y_HOME_POS)-ygrid*Y_MAX_LENGTH/(ZADJUST_GRIDPOINTS-1);
+      if(xgrid>=0 && xgrid<ZADJUST_GRIDPOINTS && ygrid>=0 && ygrid<ZADJUST_GRIDPOINTS)
+      {
+        float zshift=(1-wx)*(1-wy)*zadjust_grid[xgrid+0+ZADJUST_GRIDPOINTS*(ygrid+0)]+
+                (0+wx)*(1-wy)*zadjust_grid[xgrid+1+ZADJUST_GRIDPOINTS*(ygrid+0)]+
+                (1-wx)*(0+wy)*zadjust_grid[xgrid+0+ZADJUST_GRIDPOINTS*(ygrid+1)]+
+                (0+wx)*(0+wy)*zadjust_grid[xgrid+1+ZADJUST_GRIDPOINTS*(ygrid+1)];
+        destination[Z_AXIS]+=zshift;
+    
+      }
+      else
+      {
+        serialprintPGM("Strange zshift.");
+      }
+  #endif
+  
   if(code_seen('F')) {
     next_feedrate = code_value();
     if(next_feedrate > 0.0) feedrate = next_feedrate;
