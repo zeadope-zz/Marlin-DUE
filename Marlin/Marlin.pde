@@ -178,7 +178,11 @@ static uint8_t tmp_extruder;
 
 bool Stopped=false;
 #ifdef ZADJUST
-  float zadjust_grid[ZADJUST_GRIDPOINTS*ZADJUST_GRIDPOINTS]={0,0,0, 0,0,0, 0,0,1}; //2d height offset grid
+ // a positive zshift means that the head will move higher at that position.
+  //float zadjust_grid[ZADJUST_GRIDPOINTS*ZADJUST_GRIDPOINTS]={0,0,0, 0, 5, 0 , 0 ,5,0}; //2d height offset grid  
+float zadjust_grid[ZADJUST_GRIDPOINTS*ZADJUST_GRIDPOINTS]={0.1,0.1, 0.1, 0}; //2d height offset grid x1/ymin, x2/ymin ...
+  
+  float zshift_last=0;
 #endif
 
 //===========================================================================
@@ -1348,15 +1352,22 @@ void get_coordinates()
       int8_t xgrid,ygrid;
       xgrid=(destination[X_AXIS]-X_HOME_POS)*(ZADJUST_GRIDPOINTS-1)/X_MAX_LENGTH;
       ygrid=(destination[Y_AXIS]-Y_HOME_POS)*(ZADJUST_GRIDPOINTS-1)/Y_MAX_LENGTH;
+      //SERIAL_ERROR_START("grid:");SERIAL_ERROR((int)xgrid);SERIAL_ERROR(" ");SERIAL_ERROR((int)xgrid);SERIAL_ERRORLN("\n");
       float wx=(destination[X_AXIS]-X_HOME_POS)-xgrid*X_MAX_LENGTH/(ZADJUST_GRIDPOINTS-1);
       float wy=(destination[Y_AXIS]-Y_HOME_POS)-ygrid*Y_MAX_LENGTH/(ZADJUST_GRIDPOINTS-1);
-      if(xgrid>=0 && xgrid<ZADJUST_GRIDPOINTS && ygrid>=0 && ygrid<ZADJUST_GRIDPOINTS)
+      wx*=(ZADJUST_GRIDPOINTS-1)/float(X_MAX_LENGTH);
+      wy*=(ZADJUST_GRIDPOINTS-1)/float(X_MAX_LENGTH);
+      //SERIAL_ERROR_START("wx:");SERIAL_ERROR(wx);SERIAL_ERROR(" ");SERIAL_ERROR(wy);SERIAL_ERRORLN("\n");
+      if(xgrid>=0 && xgrid<ZADJUST_GRIDPOINTS && ygrid>=0 && ygrid<ZADJUST_GRIDPOINTS) 
       {
+        
         float zshift=(1-wx)*(1-wy)*zadjust_grid[xgrid+0+ZADJUST_GRIDPOINTS*(ygrid+0)]+
                 (0+wx)*(1-wy)*zadjust_grid[xgrid+1+ZADJUST_GRIDPOINTS*(ygrid+0)]+
                 (1-wx)*(0+wy)*zadjust_grid[xgrid+0+ZADJUST_GRIDPOINTS*(ygrid+1)]+
                 (0+wx)*(0+wy)*zadjust_grid[xgrid+1+ZADJUST_GRIDPOINTS*(ygrid+1)];
-        destination[Z_AXIS]+=zshift;
+        //SERIAL_ERROR("zshift:");SERIAL_ERROR(zshift);SERIAL_ERROR(" current z:");SERIAL_ERROR(destination[Z_AXIS]);SERIAL_ERRORLN("\n");
+        destination[Z_AXIS]+=zshift-zshift_last;
+        zshift_last=zshift;
     
       }
       else

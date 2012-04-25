@@ -166,7 +166,7 @@ const int dropsegments=5; //everything with less than this number of steps will 
 //untested z-probe adjusting
 #define ZADJUST
 #ifdef ZADJUST
- #define ZADJUST_GRIDPOINTS 3
+ #define ZADJUST_GRIDPOINTS 2
 
 #endif
 //===========================================================================
