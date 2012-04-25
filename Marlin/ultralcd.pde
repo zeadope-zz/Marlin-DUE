@@ -521,7 +521,8 @@ void MainMenu::showPrepare()
       beepshort(); );
       break;
     case ItemP_cooldown:
-      MENUITEM(  lcdprintPGM(MSG_COOLDOWN)  ,  BLOCK;setTargetHotend0(0);setTargetBed(0);beepshort(); ) ;
+      MENUITEM(  lcdprintPGM(MSG_COOLDOWN)  ,  BLOCK;setTargetHotend0(0);setTargetBed(0);FanSpeed=255;
+            analogWrite(FAN_PIN,  FanSpeed);beepshort(); ) ;
       break;
 //    case ItemP_extrude:
   //    MENUITEM(  lcdprintPGM(" Extrude")  ,  BLOCK;enquecommand("G92 E0");enquecommand("G1 F700 E50");beepshort(); ) ;
@@ -932,7 +933,7 @@ enum {
 #if (HEATER_BED_PIN > -1)
 ItemCT_bed,
 #endif  
-  ItemCT_fan,
+  ItemCT_fan, ItemCT_autotune,
   ItemCT_PID_P,ItemCT_PID_I,ItemCT_PID_D,ItemCT_PID_C
 };
 
@@ -1183,6 +1184,25 @@ void MainMenu::showControlTemp()
         
       }break;
       	#ifdef PIDTEMP
+      
+      case ItemCT_autotune:
+      {
+        if(force_lcd_update)
+        {
+          lcd.setCursor(0,line);lcdprintPGM(MSG_AUTOTUNE);
+        }
+        
+        if((activeline!=line) )
+          break;
+        
+        if(CLICKED)
+        {
+          enquecommand("M303");
+          BLOCK;
+        }
+        
+      }break;
+      
       case ItemCT_PID_P: 
       {
       if(force_lcd_update)
@@ -1270,11 +1290,11 @@ void MainMenu::showControlTemp()
           linechanging=!linechanging;
           if(linechanging)
           {
-              encoderpos=(int)(Kd/5./PID_dT);
+              encoderpos=(int)(Kd*PID_dT);
           }
           else
           {
-            Kd= encoderpos;
+            Kd= encoderpos/PID_dT;
             encoderpos=activeline*lcdslow;
               
           }
@@ -1806,6 +1826,7 @@ void MainMenu::showControl()
    case ItemC_move:
       MENUITEM(  lcdprintPGM(MSG_MOTION_WIDE)  ,  BLOCK;status=Sub_MotionControl;beepshort(); ) ;
       break;
+#ifdef EEPROM_SETTINGS
     case ItemC_store:
     {
       if(force_lcd_update)
@@ -1848,12 +1869,17 @@ void MainMenu::showControl()
         EEPROM_RetrieveSettings(true);
       }
     }break;
+#endif
     default:   
       break;
   }
   line++;
  }
+#ifdef EEPROM_SETTINGS
  updateActiveLines(ItemC_failsafe,encoderpos);
+#else
+ updateActiveLines(ItemC_move,encoderpos);
+#endif
 }
 
 

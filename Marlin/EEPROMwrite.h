@@ -77,7 +77,8 @@ inline void EEPROM_StoreSettings()
 
 inline void EEPROM_printSettings()
 {  // if def=true, the default values will be used
-  #ifdef EEPROM_SETTINGS  
+  #ifdef EEPROM_SETTINGS 
+  #ifdef EEPROM_CHITCHAT
       SERIAL_ECHO_START;
       SERIAL_ECHOLNPGM("Steps per unit:");
       SERIAL_ECHO_START;
@@ -128,6 +129,7 @@ inline void EEPROM_printSettings()
       SERIAL_ECHOPAIR(" D" ,Kd*PID_dT);
       SERIAL_ECHOLN(""); 
     #endif
+  #endif
   #endif
 } 
 
