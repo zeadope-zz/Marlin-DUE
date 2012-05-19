@@ -866,7 +866,8 @@ void process_commands()
       #endif
       #ifdef PIDTEMP
         SERIAL_PROTOCOLPGM(" @:");
-        SERIAL_PROTOCOL(getHeaterPower(tmp_extruder));  
+        SERIAL_PROTOCOL_F(getHeaterPower(tmp_extruder)/1.27,0);
+        SERIAL_PROTOCOLPGM("%");
       #endif
         SERIAL_PROTOCOLLN("");
       return;
@@ -912,7 +913,9 @@ void process_commands()
         while((residencyStart == -1) ||
               (residencyStart >= 0 && (((unsigned int) (millis() - residencyStart)) < (TEMP_RESIDENCY_TIME * 1000UL))) ) {
       #else
-        while ( target_direction ? (isHeatingHotend(tmp_extruder)) : (isCoolingHotend(tmp_extruder)&&(CooldownNoWait==false)) ) {
+        while ( target_direction ? 
+                (degHotend(tmp_extruder) <= (degTargetHotend(tmp_extruder)-TEMP_WINDOW)) : 
+                ((degHotend(tmp_extruder) >= (degTargetHotend(tmp_extruder)+TEMP_WINDOW))&&(CooldownNoWait==false)) ) {
       #endif //TEMP_RESIDENCY_TIME
           if( (millis() - codenum) > 1000UL )
           { //Print Temp Reading and remaining time every 1 second while heating up/cooling down
@@ -944,7 +947,7 @@ void process_commands()
               or when current temp falls outside the hysteresis after target temp was reached */
           if ((residencyStart == -1 &&  target_direction && (degHotend(tmp_extruder) >= (degTargetHotend(tmp_extruder)-TEMP_WINDOW))) ||
               (residencyStart == -1 && !target_direction && (degHotend(tmp_extruder) <= (degTargetHotend(tmp_extruder)+TEMP_WINDOW))) ||
-              (residencyStart > -1 && labs(degHotend(tmp_extruder) - degTargetHotend(tmp_extruder)) > TEMP_HYSTERESIS) ) 
+              (residencyStart > -1 && fabs(degHotend(tmp_extruder) - degTargetHotend(tmp_extruder)) > TEMP_HYSTERESIS) ) 
           {
             residencyStart = millis();
           }

@@ -695,33 +695,35 @@ void plan_buffer_line(const float &x, const float &y, const float &z, const floa
   }
 #endif
   // Start with a safe speed
-  float vmax_junction = max_xy_jerk/2;  
+  float vmax_junction = max_xy_jerk/2; 
+  float vmax_junction_factor = 1.0; 
   if(fabs(current_speed[Z_AXIS]) > max_z_jerk/2) 
-    vmax_junction = max_z_jerk/2;
-  vmax_junction = min(vmax_junction, block->nominal_speed);
+    vmax_junction = min(vmax_junction, max_z_jerk/2);
   if(fabs(current_speed[E_AXIS]) > max_e_jerk/2) 
     vmax_junction = min(vmax_junction, max_e_jerk/2);
-    
+  vmax_junction = min(vmax_junction, block->nominal_speed);
+  float safe_speed = vmax_junction;
+  
   if ((moves_queued > 1) && (previous_nominal_speed > 0.0001)) {
     float jerk = sqrt(pow((current_speed[X_AXIS]-previous_speed[X_AXIS]), 2)+pow((current_speed[Y_AXIS]-previous_speed[Y_AXIS]), 2));
     if((fabs(previous_speed[X_AXIS]) > 0.0001) || (fabs(previous_speed[Y_AXIS]) > 0.0001)) {
       vmax_junction = block->nominal_speed;
     }
     if (jerk > max_xy_jerk) {
-      vmax_junction *= (max_xy_jerk/jerk);
+      vmax_junction_factor = (max_xy_jerk/jerk);
     } 
     if(fabs(current_speed[Z_AXIS] - previous_speed[Z_AXIS]) > max_z_jerk) {
-      vmax_junction *= (max_z_jerk/fabs(current_speed[Z_AXIS] - previous_speed[Z_AXIS]));
+      vmax_junction_factor= min(vmax_junction_factor, (max_z_jerk/fabs(current_speed[Z_AXIS] - previous_speed[Z_AXIS])));
     } 
     if(fabs(current_speed[E_AXIS] - previous_speed[E_AXIS]) > max_e_jerk) {
-      vmax_junction *= (max_e_jerk/fabs(current_speed[E_AXIS] - previous_speed[E_AXIS]));
+      vmax_junction_factor = min(vmax_junction_factor, (max_e_jerk/fabs(current_speed[E_AXIS] - previous_speed[E_AXIS])));
     } 
   }
-  block->max_entry_speed = vmax_junction;
+  block->max_entry_speed = vmax_junction * vmax_junction_factor;
     
-  // Initialize block entry speed. Compute based on deceleration to user-defined MINIMUM_PLANNER_SPEED.
-  double v_allowable = max_allowable_speed(-block->acceleration,MINIMUM_PLANNER_SPEED,block->millimeters);
-  block->entry_speed = min(vmax_junction, v_allowable);
+  // Initialize block entry speed. Compute based on deceleration to safe speed.
+  double v_allowable = max_allowable_speed(-block->acceleration, safe_speed, block->millimeters);
+  block->entry_speed = min(block->max_entry_speed, v_allowable);
 
   // Initialize planner efficiency flags
   // Set flag if block will always reach maximum junction speed regardless of entry/exit speeds.

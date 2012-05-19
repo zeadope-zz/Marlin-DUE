@@ -180,14 +180,14 @@ build: applet elf hex
 applet: 
 	@mkdir -p applet
 
-# the .cpp for Marlin depends on the .pde
-#applet/$(TARGET).cpp: $(TARGET).pde
+# the .cpp for Marlin depends on the .ino
+#applet/$(TARGET).cpp: $(TARGET).ino
 # ..and the .o depends from the .cpp
 #applet/%.o: applet/%.cpp
 
-applet/%.cpp: %.pde $(MAKEFILE)
+applet/%.cpp: %.ino $(MAKEFILE)
 # Here is the "preprocessing".
-# It creates a .cpp file based with the same name as the .pde file.
+# It creates a .cpp file based with the same name as the .ino file.
 # On top of the new .cpp file comes the WProgram.h header.
 	@echo "  WR    $@"
 	@echo '#include "WProgram.h"' > $@
