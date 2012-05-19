@@ -1,10 +1,10 @@
 WARNING: 
 --------
-THIS IS RELEASE CANDIDATE 2 FOR MARLIN 1.0.0
+THIS IS RELEASE CANDIDATE 3 FOR MARLIN 1.0.0
 
-The configuration is now split in two files
-Configuration.h for the normal settings
-Configuration_adv.h for the advanced settings
+Only arduino 1.0 is supported.
+If you are using arduino 0022 or 0023 switch to arduino 1.0.
+
 
 Gen7T is not supported.
 
@@ -74,13 +74,13 @@ To reduce noise and make the PID-differential term more useful, 16 ADC conversio
 If your gcode contains a wide spread of extruder velocities, or you realtime change the building speed, the temperature should be changed accordingly.
 Usually, higher speed requires higher temperature.
 This can now be performed by the AutoTemp function
-By calling M109 S<mintemp> T<maxtemp> F<factor> you enter the autotemp mode.
+By calling M109 S<mintemp> B<maxtemp> F<factor> you enter the autotemp mode.
 
 You can leave it by calling M109 without any F.
 If active, the maximal extruder stepper rate of all buffered moves will be calculated, and named "maxerate" [steps/sec].
 The wanted temperature then will be set to t=tempmin+factor*maxerate, while being limited between tempmin and tempmax.
 If the target temperature is set manually or by gcode to a value less then tempmin, it will be kept without change.
-Ideally, your gcode can be completely free of temperature controls, apart from a M109 S T F in the start.gcode, and a M109 S0 in the end.gcode.
+Ideally, your gcode can be completely free of temperature controls, apart from a M109 S B F in the start.gcode, and a M109 S0 in the end.gcode.
 
 *EEPROM:*
 
@@ -175,7 +175,7 @@ MISC:
 Configuring and compilation:
 ============================
 
-Install the arduino software IDE/toolset v22
+Install the arduino software IDE/toolset v1.0
    http://www.arduino.cc/en/Main/Software
 
 For gen6 and sanguinololu the Sanguino directory in the Marlin dir needs to be copied to the arduino environment.
