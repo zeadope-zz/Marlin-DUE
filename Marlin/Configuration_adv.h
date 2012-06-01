@@ -138,12 +138,7 @@
 //#define ADVANCE
 
 #ifdef ADVANCE
-  #define EXTRUDER_ADVANCE_K .0
-
-  #define D_FILAMENT 2.85
-  #define STEPS_MM_E 836
-  #define EXTRUTION_AREA (0.25 * D_FILAMENT * D_FILAMENT * 3.14159)
-  #define STEPS_PER_CUBIC_MM_E (axis_steps_per_unit[E_AXIS]/ EXTRUTION_AREA)
+  #define DEFAULT_RETRACT                2.0    // Retract distance in mm
 
 #endif // ADVANCE
 

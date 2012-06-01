@@ -38,7 +38,8 @@ template <class T> int EEPROM_readAnything(int &ee, T& value)
 // the default values are used whenever there is a change to the data, to prevent
 // wrong data being written to the variables.
 // ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
-#define EEPROM_VERSION "V05"  
+#define EEPROM_VERSION "V06"  
+#define PREV_EEPROM_VERSION "V05"  
 
 inline void EEPROM_StoreSettings() 
 {
@@ -183,6 +184,9 @@ inline void EEPROM_RetrieveSettings(bool def=false)
       max_xy_jerk=DEFAULT_XYJERK;
       max_z_jerk=DEFAULT_ZJERK;
       max_e_jerk=DEFAULT_EJERK;
+      #ifdef ADVANCE
+      extruder_deprime_steps = lround(DEFAULT_RETRACT * axis_steps_per_unit[E_AXIS]);
+      #endif
       SERIAL_ECHO_START;
       SERIAL_ECHOLN("Using Default settings:");
     }

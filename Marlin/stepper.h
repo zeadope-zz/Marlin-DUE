@@ -66,6 +66,7 @@ void checkStepperErrors(); //Print errors detected by the stepper
 void finishAndDisableSteppers();
 
 extern block_t *current_block;  // A pointer to the block currently being traced
+extern long extruder_deprime_steps; // retract distance in steps
 
 void quickStop();
 #endif

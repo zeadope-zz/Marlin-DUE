@@ -38,10 +38,11 @@ typedef struct {
   unsigned char direction_bits;             // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
   unsigned char active_extruder;            // Selects the active extruder
   #ifdef ADVANCE
-    long advance_rate;
-    volatile long initial_advance;
-    volatile long final_advance;
-    float advance;
+    long advance_lead_entry;
+    long advance_lead_exit;
+    long advance_pressure_relax;
+    long advance_lead_prime;
+    long advance_lead_deprime;
   #endif
 
   // Fields used by the motion planner to manage acceleration

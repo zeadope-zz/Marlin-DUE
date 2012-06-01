@@ -38,7 +38,7 @@
 #include "language.h"
 #include "pins_arduino.h"
 
-#define VERSION_STRING  "1.0.0 RC2"
+#define VERSION_STRING  "1.0.0"
 
 // look here for descriptions of gcodes: http://linuxcnc.org/handbook/gcode/g-code.html
 // http://objects.reprap.org/wiki/Mendel_User_Manual:_RepRapGCodes
@@ -103,6 +103,7 @@
 // M220 S<factor in percent>- set speed factor override percentage
 // M221 S<factor in percent>- set extrude factor override percentage
 // M240 - Trigger a camera to take a photograph
+// M250 - Set retract distance(M250 E2.5)
 // M301 - Set PID parameters P I and D
 // M302 - Allow cold extrudes
 // M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
@@ -536,17 +537,20 @@ bool code_seen(char code)
     feedrate = homing_feedrate[LETTER##_AXIS]; \
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); \
     st_synchronize();\
+    delay(20);\
     \
     current_position[LETTER##_AXIS] = 0;\
     plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);\
     destination[LETTER##_AXIS] = -LETTER##_HOME_RETRACT_MM * LETTER##_HOME_DIR;\
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); \
     st_synchronize();\
+    delay(20);\
     \
     destination[LETTER##_AXIS] = 2*LETTER##_HOME_RETRACT_MM * LETTER##_HOME_DIR;\
     feedrate = homing_feedrate[LETTER##_AXIS]/2 ;  \
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder); \
     st_synchronize();\
+    delay(20);\
     \
     current_position[LETTER##_AXIS] = (LETTER##_HOME_DIR == -1) ? LETTER##_HOME_POS : LETTER##_MAX_LENGTH;\
     destination[LETTER##_AXIS] = current_position[LETTER##_AXIS];\
@@ -623,6 +627,7 @@ void process_commands()
           feedrate =homing_feedrate[Y_AXIS]; 
         plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
         st_synchronize();
+        delay(20);
     
         current_position[X_AXIS] = (X_HOME_DIR == -1) ? X_HOME_POS : X_MAX_LENGTH;
         current_position[Y_AXIS] = (Y_HOME_DIR == -1) ? Y_HOME_POS : Y_MAX_LENGTH;
@@ -632,6 +637,7 @@ void process_commands()
         plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
         feedrate = 0.0;
         st_synchronize();
+        delay(20);
         endstops_hit_on_purpose();
       }
       #endif
@@ -1200,7 +1206,13 @@ void process_commands()
       }
     }
     break;
-
+    #ifdef ADVANCE
+    case 250: // M250
+      {
+        if(code_seen('E')) extruder_deprime_steps = lround(code_value() * axis_steps_per_unit[E_AXIS]);
+      }
+      break;
+    #endif //ADVANCE
     #ifdef PIDTEMP
     case 301: // M301
       {
@@ -1527,16 +1539,16 @@ void setPwmFrequency(uint8_t pin, int val)
     #if defined(TCCR0A)
     case TIMER0A:
     case TIMER0B:
-         TCCR0B &= ~(CS00 | CS01 | CS02);
-         TCCR0B |= val;
+//         TCCR0B &= ~(CS00 | CS01 | CS02); // Timer 0 is used for the Arduino timing. And for the temp interrupt
+//         TCCR0B |= val;
          break;
     #endif
 
     #if defined(TCCR1A)
     case TIMER1A:
     case TIMER1B:
-         TCCR1B &= ~(CS10 | CS11 | CS12);
-         TCCR1B |= val;
+//         TCCR1B &= ~(CS10 | CS11 | CS12); // Used for the main motion interrupt
+//         TCCR1B |= val;
          break;
     #endif
 
