@@ -110,6 +110,8 @@
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 // M503 - print the current settings (from memory not from eeprom)
 // M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
+// M401 - Probe height
+// M401 - Probe and fill grid automatically
 // M999 - Restart after being stopped by error
 
 //Stepper Movement Variables
@@ -180,7 +182,7 @@ bool Stopped=false;
 #ifdef ZADJUST
  // a positive zshift means that the head will move higher at that position.
   //float zadjust_grid[ZADJUST_GRIDPOINTS*ZADJUST_GRIDPOINTS]={0,0,0, 0, 5, 0 , 0 ,5,0}; //2d height offset grid  
-float zadjust_grid[ZADJUST_GRIDPOINTS*ZADJUST_GRIDPOINTS]={0.1,0.1, 0.1, 0}; //2d height offset grid x1/ymin, x2/ymin ...
+float zadjust_grid[ZADJUST_GRIDPOINTS*ZADJUST_GRIDPOINTS]={0,0, 0, 0}; //2d height offset grid x1/ymin, x2/ymin ...
   
   float zshift_last=0;
 #endif
@@ -1253,7 +1255,7 @@ void process_commands()
     break;
     case 303: // M303 PID autotune
     {
-      float temp = 150.0;
+      float temp = 200.0;
       if (code_seen('S')) temp=code_value();
       PID_autotune(temp);
     }
@@ -1281,6 +1283,65 @@ void process_commands()
     case 503: // print settings currently in memory
     {
       EEPROM_printSettings();
+    }
+    break;
+    case 401: // probe current location
+    {
+      
+      get_coordinates(); // For X Y moves 
+      prepare_move();
+      st_synchronize(); //wait until move is finished.
+      int stepcount=0;
+      stepcount+=moveZUntil(false,2000,axis_steps_per_unit[Z_AXIS]*(current_position[Z_AXIS]+0.3));
+      //stepcount+=moveZUntil(false,255);
+      
+      moveZup(stepcount,400);
+      //moveZup(300,800);
+      
+      float shift=float(stepcount)/axis_steps_per_unit[Z_AXIS];
+      //current_position[Z_AXIS]+=-shift;
+      SERIAL_ECHO_START;
+      SERIAL_ECHO("probe X ");SERIAL_ECHO(current_position[0]);
+      SERIAL_ECHO(" Y ");SERIAL_ECHO(current_position[1]);
+      SERIAL_ECHO(" steps ");SERIAL_ECHO(stepcount);
+      SERIAL_ECHO(" shift ");SERIAL_ECHOLN(shift);
+    }
+    break;
+    
+    case 402: // probe grid locations.
+    {
+      int8_t xgrid,ygrid;
+      float x,y;
+      float curz=current_position[Z_AXIS];
+      for(int ygrid=0;ygrid<ZADJUST_GRIDPOINTS;ygrid++)
+      {
+        y=Y_HOME_POS+Y_MAX_LENGTH*ygrid/(ZADJUST_GRIDPOINTS-1);
+        for(int xgrid=0;xgrid<ZADJUST_GRIDPOINTS;xgrid++)
+        {
+          x=X_HOME_POS+X_MAX_LENGTH*xgrid/(ZADJUST_GRIDPOINTS-1);
+        
+        //For X Y moves 
+         destination[0]=x;
+         destination[1]=y;
+         prepare_move();
+         st_synchronize(); //wait until move is finished.
+      
+         int stepcount=0;
+         stepcount+=moveZUntil(true,2000,axis_steps_per_unit[Z_AXIS]*(current_position[Z_AXIS]+0.3));
+        //stepcount+=moveZUntil(false,255);
+        
+        moveZup(stepcount,400);
+        //moveZup(300,800);
+        
+        float shift=float(stepcount)/axis_steps_per_unit[Z_AXIS];
+        //current_position[Z_AXIS]+=-shift;
+        SERIAL_ECHO_START;
+        SERIAL_ECHO("probe X ");SERIAL_ECHO(current_position[0]);
+        SERIAL_ECHO(" Y ");SERIAL_ECHO(current_position[1]);
+        SERIAL_ECHO(" steps ");SERIAL_ECHO(stepcount);
+        SERIAL_ECHO(" shift ");SERIAL_ECHOLN(curz-shift);
+        }
+      }
     }
     break;
     case 999: // Restart after being stopped

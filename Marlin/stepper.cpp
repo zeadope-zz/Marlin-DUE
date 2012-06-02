@@ -663,51 +663,48 @@ void st_init()
   #endif
 
   //endstops and pullups
-  #ifdef ENDSTOPPULLUPS
-    #if X_MIN_PIN > -1
-      SET_INPUT(X_MIN_PIN); 
+  
+  #if X_MIN_PIN > -1
+    SET_INPUT(X_MIN_PIN); 
+    #ifdef ENDSTOPPULLUP_XMIN
       WRITE(X_MIN_PIN,HIGH);
     #endif
-    #if X_MAX_PIN > -1
-      SET_INPUT(X_MAX_PIN); 
-      WRITE(X_MAX_PIN,HIGH);
-    #endif
-    #if Y_MIN_PIN > -1
-      SET_INPUT(Y_MIN_PIN); 
+  #endif
+      
+  #if Y_MIN_PIN > -1
+    SET_INPUT(Y_MIN_PIN); 
+    #ifdef ENDSTOPPULLUP_YMIN
       WRITE(Y_MIN_PIN,HIGH);
     #endif
-    #if Y_MAX_PIN > -1
-      SET_INPUT(Y_MAX_PIN); 
-      WRITE(Y_MAX_PIN,HIGH);
-    #endif
-    #if Z_MIN_PIN > -1
-      SET_INPUT(Z_MIN_PIN); 
+  #endif
+  
+  #if Z_MIN_PIN > -1
+    SET_INPUT(Z_MIN_PIN); 
+    #ifdef ENDSTOPPULLUP_ZMIN
       WRITE(Z_MIN_PIN,HIGH);
     #endif
-    #if Z_MAX_PIN > -1
-      SET_INPUT(Z_MAX_PIN); 
+  #endif
+      
+  #if X_MAX_PIN > -1
+    SET_INPUT(X_MAX_PIN); 
+    #ifdef ENDSTOPPULLUP_XMAX
+      WRITE(X_MAX_PIN,HIGH);
+    #endif
+  #endif
+      
+  #if Y_MAX_PIN > -1
+    SET_INPUT(Y_MAX_PIN); 
+    #ifdef ENDSTOPPULLUP_YMAX
+      WRITE(Y_MAX_PIN,HIGH);
+    #endif
+  #endif
+  
+  #if Z_MAX_PIN > -1
+    SET_INPUT(Z_MAX_PIN); 
+    #ifdef ENDSTOPPULLUP_ZMAX
       WRITE(Z_MAX_PIN,HIGH);
     #endif
-  #else //ENDSTOPPULLUPS
-    #if X_MIN_PIN > -1
-      SET_INPUT(X_MIN_PIN); 
-    #endif
-    #if X_MAX_PIN > -1
-      SET_INPUT(X_MAX_PIN); 
-    #endif
-    #if Y_MIN_PIN > -1
-      SET_INPUT(Y_MIN_PIN); 
-    #endif
-    #if Y_MAX_PIN > -1
-      SET_INPUT(Y_MAX_PIN); 
-    #endif
-    #if Z_MIN_PIN > -1
-      SET_INPUT(Z_MIN_PIN); 
-    #endif
-    #if Z_MAX_PIN > -1
-      SET_INPUT(Z_MAX_PIN); 
-    #endif
-  #endif //ENDSTOPPULLUPS
+  #endif
  
 
   //Initialize Step Pins
@@ -834,3 +831,45 @@ void quickStop()
   ENABLE_STEPPER_DRIVER_INTERRUPT();
 }
 
+
+int moveZUntil(bool stopAtZMINstate,uint16_t delaytime,uint16_t maxsteps)
+{
+  #if Z_MIN_PIN > -1
+  enable_z(); 
+  WRITE(Z_DIR_PIN,INVERT_Z_DIR);
+  int cnt=0;
+ 
+  while(cnt<maxsteps)
+  {
+    WRITE(Z_STEP_PIN, HIGH);
+    delayMicroseconds(delaytime);
+    WRITE(Z_STEP_PIN, LOW);
+    delayMicroseconds(delaytime);
+     
+    bool z_min_endstop=(READ(Z_MIN_PIN) == Z_ENDSTOPS_INVERTING);
+    if(z_min_endstop==stopAtZMINstate)
+      break;
+    cnt++;
+  }
+  return cnt;
+  #endif
+}
+
+void moveZup(int steps,uint16_t delaytime)
+{
+  #if Z_MIN_PIN > -1
+  enable_z(); 
+  WRITE(Z_DIR_PIN,!INVERT_Z_DIR);
+  int cnt=0;
+ 
+  while(cnt<steps)
+  {
+    WRITE(Z_STEP_PIN, HIGH);
+    delayMicroseconds(delaytime);
+    WRITE(Z_STEP_PIN, LOW);
+    delayMicroseconds(delaytime);
+     
+    cnt++;
+  }
+  #endif
+}

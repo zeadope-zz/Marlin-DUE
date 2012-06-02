@@ -68,4 +68,7 @@ void finishAndDisableSteppers();
 extern block_t *current_block;  // A pointer to the block currently being traced
 
 void quickStop();
+
+int moveZUntil(bool stopAtZMINstate, uint16_t delaytime, uint16_t maxsteps);
+void moveZup(int steps,uint16_t delaytime);
 #endif

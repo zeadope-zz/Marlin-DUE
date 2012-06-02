@@ -12,8 +12,8 @@
 #define STRING_CONFIG_H_AUTHOR "erik" //Who made the changes.
 
 // This determines the communication speed of the printer
-#define BAUDRATE 250000
-//#define BAUDRATE 115200
+//#define BAUDRATE 250000
+#define BAUDRATE 115200
 
 //// The following define selects which electronics board you have. Please choose the one that matches your setup
 // Gen7 custom (Alfons3 Version) = 10 "https://github.com/Alfons3/Generation_7_Electronics"
@@ -53,11 +53,12 @@
 #define TEMP_SENSOR_0 -1
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
-#define TEMP_SENSOR_BED 0
+//#define TEMP_SENSOR_BED 1
+#define TEMP_SENSOR_BED 6
 
 // Actual temperature must be close to target for this long before M109 returns success
-#define TEMP_RESIDENCY_TIME 10	// (seconds)
-#define TEMP_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
+#define TEMP_RESIDENCY_TIME 3	// (seconds)
+#define TEMP_HYSTERESIS 5      // (degC) range of +/- temperatures considered "close" to the target one
 
 // The minimal temperature defines the temperature below which the heater will not be enabled It is used
 // to check that the wiring to the thermistor is not broken. 
@@ -70,9 +71,9 @@
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 275
-#define HEATER_1_MAXTEMP 275
-#define HEATER_2_MAXTEMP 275
+#define HEATER_0_MAXTEMP 2750
+#define HEATER_1_MAXTEMP 2750
+#define HEATER_2_MAXTEMP 2750
 #define BED_MAXTEMP 150
 
 
@@ -89,9 +90,9 @@
 
 // If you are using a preconfigured hotend then you can use one of the value sets by uncommenting it
 // Ultimaker
-    #define  DEFAULT_Kp 22.2
-    #define  DEFAULT_Ki 1.08  
-    #define  DEFAULT_Kd 114  
+    #define  DEFAULT_Kp  9.17
+    #define  DEFAULT_Ki (0.34*PID_dT)  
+    #define  DEFAULT_Kd (61.77/PID_dT)  
 
 // Makergear
 //    #define  DEFAULT_Kp 7.0
@@ -99,9 +100,9 @@
 //    #define  DEFAULT_Kd 12  
 
 // Mendel Parts V9 on 12V    
-//    #define  DEFAULT_Kp 63.0
-//    #define  DEFAULT_Ki 2.25
-//    #define  DEFAULT_Kd 440
+//    #define  DEFAULT_Kp  63.0
+//    #define  DEFAULT_Ki (2.25*PID_dT)  
+//    #define  DEFAULT_Kd (440/PID_dT)
 #endif // PIDTEMP
 
 //this prevents dangerous Extruder moves, i.e. if the temperature is under the limit
@@ -114,14 +115,31 @@
 //=============================Mechanical Settings===========================
 //===========================================================================
 
-// Endstop Settings
-#define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
+// corse Endstop Settings
+//#define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
+
+// fine Enstop settings: Individual Pullups. will be ignord if ENDSTOPPULLUPS is defined
+#define ENDSTOPPULLUP_XMAX
+#define ENDSTOPPULLUP_YMAX
+#define ENDSTOPPULLUP_ZMAX
+#define ENDSTOPPULLUP_XMIN
+#define ENDSTOPPULLUP_YMIN
+//#define ENDSTOPPULLUP_ZMIN
+
+#ifdef ENDSTOPPULLUPS
+  #define ENDSTOPPULLUP_XMAX
+  #define ENDSTOPPULLUP_YMAX
+  #define ENDSTOPPULLUP_ZMAX
+  #define ENDSTOPPULLUP_XMIN
+  #define ENDSTOPPULLUP_YMIN
+  #define ENDSTOPPULLUP_ZMIN
+#endif
 
 // The pullups are needed if you directly connect a mechanical endswitch between the signal and ground pins.
 const bool X_ENDSTOPS_INVERTING = true; // set to true to invert the logic of the endstops. 
 const bool Y_ENDSTOPS_INVERTING = true; // set to true to invert the logic of the endstops. 
 const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of the endstops. 
-//#define DISABLE_MAX_ENDSTOPS
+#define DISABLE_MAX_ENDSTOPS
 
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
 #define X_ENABLE_ON 0
@@ -130,10 +148,10 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #define E_ENABLE_ON 0 // For all extruders
 
 // Disables axis when it's not being used.
-#define DISABLE_X false
-#define DISABLE_Y false
+#define DISABLE_X true
+#define DISABLE_Y true
 #define DISABLE_Z false
-#define DISABLE_E false // For all extruders
+#define DISABLE_E true// For all extruders
 
 #define INVERT_X_DIR true    // for Mendel set to false, for Orca set to true
 #define INVERT_Y_DIR false    // for Mendel set to true, for Orca set to false
@@ -148,8 +166,8 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #define Y_HOME_DIR -1
 #define Z_HOME_DIR -1
 
-#define min_software_endstops true //If true, axis won't move to coordinates less than HOME_POS.
-#define max_software_endstops true  //If true, axis won't move to coordinates greater than the defined lengths below.
+#define min_software_endstops false //If true, axis won't move to coordinates less than HOME_POS.
+#define max_software_endstops false //If true, axis won't move to coordinates greater than the defined lengths below.
 #define X_MAX_LENGTH 205
 #define Y_MAX_LENGTH 205
 #define Z_MAX_LENGTH 200
@@ -165,7 +183,7 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 
 // default settings 
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200*8/3,760*1.1}  // default steps per unit for ultimaker 
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200*8/3,760*1.1}                    // default steps per unit for ultimaker 
 #define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 45}    // (mm/sec)    
 #define DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
 
@@ -187,16 +205,16 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 // M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).  
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 //define this to enable eeprom support
-//#define EEPROM_SETTINGS
+#define EEPROM_SETTINGS
 //to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
 // please keep turned on if you can.
-//#define EEPROM_CHITCHAT
+#define EEPROM_CHITCHAT
 
 //LCD and SD support
 //#define ULTRA_LCD  //general lcd support, also 16x2
 //#define SDSUPPORT // Enable SD Card Support in Hardware Console
 
-//#define ULTIMAKERCONTROLLER //as available from the ultimaker online store.
+#define ULTIMAKERCONTROLLER //as available from the ultimaker online store.
 //#define ULTIPANEL  //the ultipanel as on thingiverse
 
 
@@ -207,12 +225,12 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
  
 
 #ifdef ULTIPANEL
-//  #define NEWPANEL  //enable this if you have a click-encoder panel
+  //#define NEWPANEL  //enable this if you have a click-encoder panel
   #define SDSUPPORT
   #define ULTRA_LCD
   #define LCD_WIDTH 20
   #define LCD_HEIGHT 4
-  
+
 // Preheat Constants
   #define PLA_PREHEAT_HOTEND_TEMP 180 
   #define PLA_PREHEAT_HPB_TEMP 70
@@ -225,7 +243,7 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #else //no panel but just lcd 
   #ifdef ULTRA_LCD
     #define LCD_WIDTH 16
-    #define LCD_HEIGHT 2    
+    #define LCD_HEIGHT 2
   #endif
 #endif
 
