@@ -204,22 +204,20 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #define HOMING_FEEDRATE {50*60, 50*60, 4*60, 0}  // set the homing speeds (mm/min)
 
 #define EXTRUDER_OFFSET_X {0.0, 21.68, 0.0} // (in mm) per extruder, offset of the extruder on the X axis
-#define EXTRUDER_OFFSET_Y {0.0, 0.64, 0.0} // (in mm) per extruder, offset of the extruder on the Y axis
+#define EXTRUDER_OFFSET_Y {0.0, 0.64, 0.0}  // (in mm) per extruder, offset of the extruder on the Y axis
 
 // default settings 
 
 #define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200*8/3,760*1.1,760,760}  //  X,Y,Z,E0... default steps per unit for ultimaker 
 
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 45, 45, 45} // X,Y,Z,E0...(mm/sec)    
-#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,9000,9000,9000} // X,Y,Z,E0... maximum acceleration (mm/s^2). E default values are good for skeinforge 40+, for older versions raise them a lot.
-#define DEFAULT_RETRACT_ACCELERATION  {3000,3000,3000} // E0... (per extruder) acceleration in mm/s^2 for retracts 
-#define DEFAULT_ACCELERATION          3000   // X,Y,Z and E* acceleration (one for all) in mm/s^2 for printing moves 
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 45, 45, 45}      // X,Y,Z,E0...(mm/sec)    
+#define DEFAULT_MAX_ACCELERATION      {3000,3000,100,3000,3000,3000} // X,Y,Z,E0... maximum acceleration (mm/s^2). E default values are good for skeinforge 40+, for older versions raise them a lot.
+#define DEFAULT_RETRACT_ACCELERATION  {3000,3000,3000}               // E0... (per extruder) acceleration in mm/s^2 for retracts 
+#define DEFAULT_ACCELERATION          3000                           // X,Y,Z and E* acceleration (one for all) in mm/s^2 for printing moves 
 
-// 
-
-#define DEFAULT_XYJERK                20.0          // (mm/sec)
-#define DEFAULT_ZJERK                 0.4           // (mm/sec)
-#define DEFAULT_EJERK                 {5.0,5.0,5.0} // E0... (mm/sec) per extruder, max initial speed for retract moves
+#define DEFAULT_XYJERK                20.0             // (mm/sec)
+#define DEFAULT_ZJERK                 0.4              // (mm/sec)
+#define DEFAULT_EJERK                 {5.0, 5.0, 5.0}  // E0... (mm/sec) per extruder, max initial speed for retract moves
 
 //===========================================================================
 //=============================Additional Features===========================

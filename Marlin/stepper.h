@@ -37,9 +37,6 @@
   #define REV_E_DIR() WRITE(E0_DIR_PIN, INVERT_E0_DIR)
 #endif
 
-
-#endif
-
 // Initialize and start the stepper motor subsystem
 void st_init();
 

@@ -27,11 +27,7 @@ template <class T> int EEPROM_readAnything(int &ee, T& value)
 }
 //======================================================================================
 
-
-
-
 #define EEPROM_OFFSET 100
-
 
 // IMPORTANT:  Whenever there are changes made to the variables stored in EEPROM
 // in the functions below, also increment the version number. This makes sure that
@@ -279,7 +275,6 @@ inline void EEPROM_RetrieveSettings(bool def=false)
       mintravelfeedrate=DEFAULT_MINTRAVELFEEDRATE;
       max_xy_jerk=DEFAULT_XYJERK;
       max_z_jerk=DEFAULT_ZJERK;
-      max_e_jerk=DEFAULT_EJERK;
       SERIAL_ECHO_START;
       SERIAL_ECHOLN("Using Default settings:");
     }
