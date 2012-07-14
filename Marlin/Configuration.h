@@ -8,7 +8,7 @@
 //User specified version info of THIS file to display in [Pronterface, etc] terminal window during startup.
 //Implementation of an idea by Prof Braino to inform user that any changes made
 //to THIS file by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H "2012-05-02" //Personal revision number for changes to THIS file.
+#define STRING_VERSION_CONFIG_H "2012-07-14" //Personal revision number for changes to THIS file.
 #define STRING_CONFIG_H_AUTHOR "erik" //Who made the changes.
 
 // This determines the communication speed of the printer
@@ -215,7 +215,6 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #define EXTRUDER_OFFSET_Y {0.0, 0.64, 0.0}  // (in mm) per extruder, offset of the extruder on the Y axis
 
 // default settings 
-
 #define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200*8/3,760*1.1,760,760}  //  X,Y,Z,E0... default steps per unit for ultimaker 
 
 #define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 45, 45, 45}      // X,Y,Z,E0...(mm/sec)    
@@ -247,7 +246,7 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 //#define SDSUPPORT // Enable SD Card Support in Hardware Console
 
 //#define ULTIMAKERCONTROLLER //as available from the ultimaker online store.
-//#define ULTIPANEL  //the ultipanel as on thingiverse
+#define ULTIPANEL  //the ultipanel as on thingiverse
 
 
 #ifdef ULTIMAKERCONTROLLER    //automatic expansion

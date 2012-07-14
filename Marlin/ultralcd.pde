@@ -887,7 +887,7 @@ void MainMenu::showTune()
       if(force_lcd_update)
         {
           lcd.setCursor(0,line);lcdprintPGM(MSG_FLOW);
-          lcd.setCursor(13,line);lcd.print(ftostr52(axis_steps_per_unit[E_AXIS]));
+          lcd.setCursor(13,line);lcd.print(ftostr52(axis_steps_per_unit[3+active_extruder]));
         }
         
         if((activeline!=line) )
@@ -898,11 +898,11 @@ void MainMenu::showTune()
           linechanging=!linechanging;
           if(linechanging)
           {
-              encoderpos=(long)(axis_steps_per_unit[E_AXIS]*100.0);
+              encoderpos=(long)(axis_steps_per_unit[3+active_extruder]*100.0);
           }
           else
           {
-            float factor=float(encoderpos)/100.0/float(axis_steps_per_unit[E_AXIS]);
+            float factor=float(encoderpos)/100.0/float(axis_steps_per_unit[3+active_extruder]);
             position[E_AXIS]=lround(position[E_AXIS]*factor);
             //current_position[E_AXIS]*=factor;
             axis_steps_per_unit[E_AXIS]= encoderpos/100.0;
@@ -1538,14 +1538,15 @@ void MainMenu::showControlMotion()
     case ItemCM_vmaxz:
     case ItemCM_vmaxe:
       {
-      if(force_lcd_update)
+        int ii = i - ItemCM_vmaxx + ((i==ItemCM_vmaxe) ? active_extruder : 0);
+        if(force_lcd_update)
         {
           lcd.setCursor(0,line);lcdprintPGM(MSG_VMAX);
           if(i==ItemCM_vmaxx)lcdprintPGM(MSG_X);
           if(i==ItemCM_vmaxy)lcdprintPGM(MSG_Y);
           if(i==ItemCM_vmaxz)lcdprintPGM(MSG_Z);
           if(i==ItemCM_vmaxe)lcdprintPGM(MSG_E);
-          lcd.setCursor(13,line);lcd.print(itostr3(max_feedrate[i-ItemCM_vmaxx]));
+          lcd.setCursor(13,line);lcd.print(itostr3(max_feedrate[ii]));
         }
         
         if((activeline!=line) )
@@ -1653,7 +1654,7 @@ void MainMenu::showControlMotion()
     case ItemCM_amaxz:
     case ItemCM_amaxe:
       {
-        int ii = i - ItemCM_amaxx + ((i==ItemCM_amaxe) ? ACTIVE_EXTRUDER : 0);
+        int ii = i - ItemCM_amaxx + ((i==ItemCM_amaxe) ? active_extruder : 0);
         if(force_lcd_update)
         {
           lcd.setCursor(0,line);lcdprintPGM(" Amax ");
@@ -1661,7 +1662,7 @@ void MainMenu::showControlMotion()
           if(i==ItemCM_amaxy)lcdprintPGM(MSG_Y);
           if(i==ItemCM_amaxz)lcdprintPGM(MSG_Z);
           if(i==ItemCM_amaxe)lcdprintPGM(MSG_E);
-          lcd.setCursor(13,line);lcd.print(itostr3(max_acceleration_units_per_sq_second[i-ItemCM_amaxx]/100));lcdprintPGM("00");
+          lcd.setCursor(13,line);lcd.print(itostr3(max_acceleration_units_per_sq_second[ii]/100));lcdprintPGM("00");
         }
         
         if((activeline!=line) )
@@ -1697,7 +1698,7 @@ void MainMenu::showControlMotion()
         if(force_lcd_update)
         {
           lcd.setCursor(0,line);lcdprintPGM(MSG_A_RETRACT);
-          lcd.setCursor(13,line);lcd.print(ftostr3(retract_acceleration[ACTIVE_EXTRUDER]/100));lcdprintPGM("00");
+          lcd.setCursor(13,line);lcd.print(ftostr3(retract_acceleration[active_extruder]/100));lcdprintPGM("00");
         }
         
         if((activeline!=line) )
@@ -1708,11 +1709,11 @@ void MainMenu::showControlMotion()
           linechanging=!linechanging;
           if(linechanging)
           {
-              encoderpos=(int)retract_acceleration[ACTIVE_EXTRUDER]/100;
+              encoderpos=(int)retract_acceleration[active_extruder]/100;
           }
           else
           {
-            retract_acceleration[ACTIVE_EXTRUDER]= encoderpos*100;
+            retract_acceleration[active_extruder]= encoderpos*100;
             encoderpos=activeline*lcdslow;
               
           }
@@ -1846,7 +1847,7 @@ void MainMenu::showControlMotion()
       if(force_lcd_update)
         {
           lcd.setCursor(0,line);lcdprintPGM(MSG_ESTEPS);
-          lcd.setCursor(11,line);lcd.print(ftostr52(axis_steps_per_unit[E_AXIS]));
+          lcd.setCursor(11,line);lcd.print(ftostr52(axis_steps_per_unit[3+active_extruder]));
         }
         
         if((activeline!=line) )
@@ -1857,16 +1858,15 @@ void MainMenu::showControlMotion()
           linechanging=!linechanging;
           if(linechanging)
           {
-              encoderpos=(long)(axis_steps_per_unit[E_AXIS]*100.0);
+              encoderpos=(long)(axis_steps_per_unit[3+active_extruder]*100.0);
           }
           else
           {
-            float factor=float(encoderpos)/100.0/float(axis_steps_per_unit[E_AXIS]);
+            float factor=float(encoderpos)/100.0/float(axis_steps_per_unit[3+active_extruder]);
             position[E_AXIS]=lround(position[E_AXIS]*factor);
             //current_position[E_AXIS]*=factor;
-            axis_steps_per_unit[E_AXIS]= encoderpos/100.0;
+            axis_steps_per_unit[3+active_extruder]= encoderpos/100.0;
             encoderpos=activeline*lcdslow;
-              
           }
           BLOCK;
           beepshort();

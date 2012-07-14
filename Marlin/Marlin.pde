@@ -1027,47 +1027,53 @@ void process_commands()
       
       setWatch();
       codenum = millis(); 
-
+      bool target_direction[EXTRUDERS];
+      for(uint8_t i=start_e; i < end_e; i++) {
+        target_direction[i] = isHeatingHotend(i); // true if heating, false if cooling
+      }
+      
       #ifdef TEMP_RESIDENCY_TIME
         long residencyStart = -1;
-        int residencyTime = (code_seen('W')) ? code_value() : TEMP_RESIDENCY_TIME;
+        long residencyTime = (code_seen('W')) ? code_value() : TEMP_RESIDENCY_TIME;
       #endif //TEMP_RESIDENCY_TIME
         bool done_temp = false;
         while(!done_temp)
         {
-          if((millis() - codenum) > 1000)
+          if((millis() - codenum) > 1000UL)
           {
             // See if target extruder(s) have reached the temperature
             done_temp = true;
             for(uint8_t i = start_e; i < end_e; i++)
             {
               done_temp &= (degTargetHotend(i) == 0) ||
-                           (labs(degHotend(i) - degTargetHotend(i)) <= TEMP_HYSTERESIS);
+                           (residencyStart == -1 && target_direction && (degHotend(i) >= (degTargetHotend(i)-TEMP_WINDOW))) ||
+                           (residencyStart == -1 && !target_direction && (degHotend(i) <= (degTargetHotend(i)+TEMP_WINDOW))) ||
+                           (residencyStart > -1 && labs(degHotend(i) - degTargetHotend(i)) <= TEMP_HYSTERESIS); 
             }
             //Print Temp Reading and remaining time every 1 second while heating up/cooling down
             SERIAL_PROTOCOLPGM("T:");
-            SERIAL_PROTOCOL((int)(degHotend(tmp_extruder) + 0.5));
+            SERIAL_PROTOCOL_F(degHotend(tmp_extruder),1);
       #if TEMP_BED_PIN > -1
             SERIAL_PROTOCOLPGM(" B:");
-            SERIAL_PROTOCOL((int)(degBed() + 0.5));
+            SERIAL_PROTOCOL_F(degBed(),1);
       #endif
             SERIAL_PROTOCOLLN("");
       #if (EXTRUDERS > 1)
             SERIAL_ECHO_START;
-            for(i = 0; i < EXTRUDERS; i++)
+            for(uint8_t i = 0; i < EXTRUDERS; i++)
             {
-              SERIAL_PROTOCOLPGM(" Ext");
+              SERIAL_PROTOCOLPGM(" E");
               SERIAL_PROTOCOL(i);
               SERIAL_PROTOCOLPGM(":");
-              SERIAL_PROTOCOL((int)(degHotend(i) + 0.5));
+              SERIAL_PROTOCOL_F(degHotend(i),1);
             }
       #endif
       #ifdef TEMP_RESIDENCY_TIME
             // Print the waiting info
-            SERIAL_PROTOCOLPGM(" Wait:");
+            SERIAL_PROTOCOLPGM(" W:");
             if(residencyStart >= 0)
             {
-               codenum = residencyTime - ((millis() - residencyStart) / 1000);
+               codenum = residencyTime - ((millis() - residencyStart) / 1000UL);
                SERIAL_PROTOCOLLN(codenum);
             }
             else
@@ -1183,7 +1189,7 @@ void process_commands()
       {
         if(code_seen(axis_codes[i])) 
           
-          if(i == 3) { // E
+          if(i == E_AXIS) { // E
             float value = code_value();
             if(value < 20.0) {
               float factor = axis_steps_per_unit[i] / value; // increase e constants if M92 E14 is given for netfab.
@@ -1193,7 +1199,7 @@ void process_commands()
               max_feedrate[i] *= factor;
               axis_steps_per_sqr_second[i] *= factor;
             }
-            axis_steps_per_unit[i] = value;
+            axis_steps_per_unit[i + active_extruder] = value;
           }
           else {
             axis_steps_per_unit[i] = code_value();
