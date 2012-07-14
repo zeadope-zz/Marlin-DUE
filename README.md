@@ -11,6 +11,7 @@ Gen7T is not supported.
 Quick Information
 ===================
 This RepRap firmware is a mashup between <a href="https://github.com/kliment/Sprinter">Sprinter</a>, <a href="https://github.com/simen/grbl/tree">grbl</a> and many original parts.
+On top of that it has multiple extruder support.
 
 Derived from Sprinter and Grbl by Erik van der Zalm.
 Sprinters lead developers are Kliment and caru.
@@ -18,7 +19,6 @@ Grbls lead developer is Simen Svale Skogsrud. Sonney Jeon (Chamnit) improved som
 A fork by bkubicek for the Ultimaker was merged, and further development was aided by him.
 Some features have been added by:
 Lampmaker, Bradley Feldman, and others...
-
 
 Features:
 
@@ -46,7 +46,7 @@ Features:
 *   PID tuning
 *   CoreXY kinematics (www.corexy.com/theory.html)
 
-The default baudrate is 250000. This baudrate has less jitter and hence errors than the usual 115200 baud, but is less supported by drivers and host-environments.
+The default baudrate is 115200. You can try 250000 it is less supported by drivers and host-environments, but might work better for you.
 
 
 Differences and additions to the already good Sprinter firmware:
@@ -128,8 +128,47 @@ necessary for backwards compatibility.
 An interrupt is used to manage ADC conversions, and enforce checking for critical temperatures.
 This leads to less blocking in the heater management routine.
 
+*Temperature control:*
 
-Non-standard M-Codes, different to an old version of sprinter:
+You can configure PID to be active only within specified range of the terget temperature.
+Outside of that range simple on/off mode is used.
+
+*Multiple extruder support:*
+
+T<NUM> [F<NUM>] [S<NUM>] - changes the extruder. The feedrate might be set 
+                           to reposition the extruder and specify at what 
+                           speed. If "F" is not present the coordinates are 
+                           adjusted, but the move is not performed.
+                           "S" allows to choose what E position the just
+                           selected extruder should start from (<NUM> - the 
+                           extruder number to pick the last position from). 
+                           If "S" is not specified the last known position for 
+                           the new selected extruder is used. For example, if  
+                           Skeinforge generates support using absolute coordinates 
+                           and you want it to be printed using extruder 1 while 
+                           the object is printed using extruder 0, use "T1 S0" 
+                           to start support printing and "T0 S1" to go go back 
+                           to the object printing. Alternatively, If you have 
+                           gcode for extrider 0 and 1 generated separately and 
+                           then mixed just use T0 and T1 to switch between 
+                           the extruders.
+
+    In general, the commands and settings for extruder are applied only to the
+    active extruder. For example, to change max feedrate for extruders 0 and
+    1, one has to switch to the extruder 0, set its rate, then switch to
+    the extruder 1 and set its rate. The exception is the M503 command that 
+    shows info for all extruders. It simply prints multiple parameters that 
+    are extruder specific starting from the value for the extruder 0 and so on, 
+    for example you'll see two 'E'(rate) values if there are 2 extruders. 
+    Some of the commands (like M104, M105 and M109) can take extruder 
+    number as a parameter. For example, in order to change the temperature 
+    of the extruder 1 heater without switching to it use "M104 S180 T1".
+    M109 can be used to wait for all extruder heaters that have temperature 
+    set to non-0 values by specifying non-0 'A' parameter, e.g. "M109 A1".
+    M109 can also take the W<NUM> parameter that can change the default 
+    dwell time for temperature stabilization (if enabled in the config).
+
+Non-standard G-Codes, different to an old version of sprinter:
 ==============================================================
 Movement:
 
@@ -152,6 +191,7 @@ Movement variables:
 *   M202 - Set max acceleration in units/s^2 for travel moves (M202 X1000 Y1000) Unused in Marlin!!
 *   M203 - Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E10000) in mm/sec
 *   M204 - Set default acceleration: S normal moves T filament only moves (M204 S3000 T7000) im mm/sec^2  also sets minimum segment time in ms (B20000) to prevent buffer underruns and M20 minimum feedrate
+*   M210 - set XY offset for extruders (off of the printing point)
 *   M220 - set build speed mulitplying S:factor in percent ; aka "realtime tuneing in the gcode". So you can slow down if you have islands in one height-range, and speed up otherwise.
 *   M221 - set the extrude multiplying S:factor in percent
 *   M400 - Finish all buffered moves.
@@ -174,6 +214,10 @@ EEPROM:
 *   M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 *   M503 - print the current settings (from memory not from eeprom)
 
+MULTIPLE EXTRUDERS:
+
+*   T<0|1|2> - changes active extruder (details in the section above) 
+
 MISC:
 
 *   M240 - Trigger a camera to take a photograph
@@ -182,23 +226,15 @@ MISC:
 Configuring and compilation:
 ============================
 
-Install the arduino software IDE/toolset v22
+Install the arduino software IDE/toolset v23
    http://www.arduino.cc/en/Main/Software
 
-For gen6 and sanguinololu the Sanguino directory in the Marlin dir needs to be copied to the arduino environment.
-  copy Marlin\sanguino <arduino home>\hardware\Sanguino
-
-Install Ultimaker's RepG 25 build
-    http://software.ultimaker.com
-For SD handling and as better substitute (apart from stl manipulation) download
-the very nice Kliment's printrun/pronterface  https://github.com/kliment/Printrun
-
-Copy the Ultimaker Marlin firmware
-   https://github.com/ErikZalm/Marlin/tree/Marlin_v1
+Copy the Marlin firmware
+   https://github.com/dob71/Marlin/tree/m
    (Use the download button)
 
 Start the arduino IDE.
-Select Tools -> Board -> Arduino Mega 2560    or your microcontroller
+Select Tools -> Board -> Arduino Mega 2560 or your microcontroller
 Select the correct serial port in Tools ->Serial Port
 Open Marlin.pde
 
@@ -207,15 +243,4 @@ Click the Verify/Compile button
 Click the Upload button
 If all goes well the firmware is uploading
 
-Start Ultimaker's Custom RepG 25
-Make sure Show Experimental Profiles is enabled in Preferences
-Select Sprinter as the Driver
-
-Press the Connect button.
-
-KNOWN ISSUES: RepG will display:  Unknown: marlin x.y.z
-
-That's ok.  Enjoy Silky Smooth Printing.
-
-
-
+Enjoy Silky Smooth Printing.

@@ -46,12 +46,14 @@ extern int current_raw_bed;
   extern int target_bed_low_temp ;  
   extern int target_bed_high_temp ;
 #endif
-extern float Kp,Ki,Kd,Kc;
-
 #ifdef PIDTEMP
+  extern float Kp,Ki,Kd,Kc;
+  #ifdef PID_RANGE
+    extern float Kr;
+  #endif
   extern float pid_setpoint[EXTRUDERS];
 #endif
-  
+
 // #ifdef WATCHPERIOD
   extern int watch_raw[EXTRUDERS] ;
 //   extern unsigned long watchmillis;
@@ -118,6 +120,9 @@ FORCE_INLINE bool isCoolingBed() {
   return target_raw_bed < current_raw_bed;
 };
 
+FORCE_INLINE bool isDoneHeatingBed() {
+  return abs(degBed()-analog2tempBed(target_raw_bed)) < 1.0;
+}
 #define degHotend0() degHotend(0)
 #define degTargetHotend0() degTargetHotend(0)
 #define setTargetHotend0(_celsius) setTargetHotend((_celsius), 0)

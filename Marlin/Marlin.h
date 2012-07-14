@@ -52,16 +52,8 @@
   #define MYSERIAL MSerial
 #endif
 
-//this is a unfinsihed attemp to removes a lot of warning messages, see:
-// http://www.avrfreaks.net/index.php?name=PNphpBB2&file=printview&t=57011
-//typedef char prog_char PROGMEM; 
-// //#define PSTR    (s )        ((const PROGMEM char *)(s))
-// //# define MYPGM(s) (__extension__({static prog_char __c[] = (s); &__c[0];})) 
-// //#define MYPGM(s) ((const prog_char *g PROGMEM=s))
 #define MYPGM(s) PSTR(s)
 //#define MYPGM(s)  (__extension__({static char __c[] __attribute__((__progmem__)) = (s); &__c[0];}))  //This is the normal behaviour
-//#define MYPGM(s)  (__extension__({static prog_char __c[]  = (s); &__c[0];})) //this does not work but hides the warnings
-
 
 #define SERIAL_PROTOCOL(x) MYSERIAL.print(x);
 #define SERIAL_PROTOCOL_F(x,y) MYSERIAL.print(x,y);
@@ -181,8 +173,10 @@ void setPwmFrequency(uint8_t pin, int val);
 
 extern float homing_feedrate[];
 extern bool axis_relative_modes[];
-extern float current_position[NUM_AXIS] ;
+extern float current_position[NUM_AXIS];
 extern float add_homeing[3];
+extern float extruder_offset[2][EXTRUDERS];
+extern unsigned int debug_flags;
 extern unsigned char FanSpeed;
 
 // Handling multiple extruders pins

@@ -1611,9 +1611,10 @@ void MainMenu::showControlMotion()
         }
         
       }break;
+      
     case ItemCM_vtravmin:
-    {
-      if(force_lcd_update)
+      {
+        if(force_lcd_update)
         {
           lcd.setCursor(0,line);lcdprintPGM(MSG_VTRAV_MIN);
           lcd.setCursor(13,line);lcd.print(itostr3(mintravelfeedrate));
@@ -1651,8 +1652,9 @@ void MainMenu::showControlMotion()
     case ItemCM_amaxy:
     case ItemCM_amaxz:
     case ItemCM_amaxe:
-    {
-      if(force_lcd_update)
+      {
+        int ii = i - ItemCM_amaxx + ((i==ItemCM_amaxe) ? ACTIVE_EXTRUDER : 0);
+        if(force_lcd_update)
         {
           lcd.setCursor(0,line);lcdprintPGM(" Amax ");
           if(i==ItemCM_amaxx)lcdprintPGM(MSG_X);
@@ -1695,7 +1697,7 @@ void MainMenu::showControlMotion()
         if(force_lcd_update)
         {
           lcd.setCursor(0,line);lcdprintPGM(MSG_A_RETRACT);
-          lcd.setCursor(13,line);lcd.print(ftostr3(retract_acceleration/100));lcdprintPGM("00");
+          lcd.setCursor(13,line);lcd.print(ftostr3(retract_acceleration[ACTIVE_EXTRUDER]/100));lcdprintPGM("00");
         }
         
         if((activeline!=line) )
@@ -1706,11 +1708,11 @@ void MainMenu::showControlMotion()
           linechanging=!linechanging;
           if(linechanging)
           {
-              encoderpos=(long)retract_acceleration/100;
+              encoderpos=(int)retract_acceleration[ACTIVE_EXTRUDER]/100;
           }
           else
           {
-            retract_acceleration= encoderpos*100;
+            retract_acceleration[ACTIVE_EXTRUDER]= encoderpos*100;
             encoderpos=activeline*lcdslow;
               
           }
