@@ -86,7 +86,7 @@ static unsigned long  previous_millis_bed_heater;
   
 #ifdef WATCHPERIOD
   int watch_raw[EXTRUDERS] = { -1000 }; // the first value used for all
-  int watch_oldtemp[3] = {0,0,0};
+  int watch_oldtemp[EXTRUDERS] = { 0 };
   unsigned long watchmillis = 0;
 #endif //WATCHPERIOD
 
@@ -103,6 +103,9 @@ static unsigned long  previous_millis_bed_heater;
                                             , (void *)heater_2_temptable
 #endif
 #if EXTRUDERS > 3
+                                            , (void *)heater_3_temptable
+#endif
+#if EXTRUDERS > 4
   #error Unsupported number of extruders
 #endif
   };
@@ -114,6 +117,9 @@ static unsigned long  previous_millis_bed_heater;
                                              , heater_2_temptable_len
 #endif
 #if EXTRUDERS > 3
+                                             , heater_3_temptable_len
+#endif
+#if EXTRUDERS > 4
   #error Unsupported number of extruders
 #endif
   };
@@ -579,6 +585,9 @@ void tp_init()
   #if (HEATER_2_PIN > -1) 
     SET_OUTPUT(HEATER_2_PIN);
   #endif  
+  #if (HEATER_3_PIN > -1) 
+    SET_OUTPUT(HEATER_3_PIN);
+  #endif 
   #if (HEATER_BED_PIN > -1) 
     SET_OUTPUT(HEATER_BED_PIN);
   #endif  
@@ -632,6 +641,13 @@ void tp_init()
        DIDR2 = 1<<(TEMP_2_PIN - 8); 
     #endif
   #endif
+  #if (TEMP_3_PIN > -1)
+    #if TEMP_3_PIN < 8
+       DIDR0 |= 1 << TEMP_3_PIN; 
+    #else
+       DIDR2 = 1<<(TEMP_3_PIN - 8); 
+    #endif
+  #endif
   #if (TEMP_BED_PIN > -1)
     #if TEMP_BED_PIN < 8
        DIDR0 |= 1<<TEMP_BED_PIN; 
@@ -668,6 +684,13 @@ void tp_init()
 #if (EXTRUDERS > 2) && defined(HEATER_2_MAXTEMP)
   maxttemp[2] = temp2analog(HEATER_2_MAXTEMP, 2);
 #endif //MAXTEMP 2
+
+#if (EXTRUDERS > 3) && defined(HEATER_3_MINTEMP)
+  minttemp[3] = temp2analog(HEATER_3_MINTEMP, 3);
+#endif //MINTEMP 3
+#if (EXTRUDERS > 3) && defined(HEATER_3_MAXTEMP)
+  maxttemp[3] = temp2analog(HEATER_3_MAXTEMP, 3);
+#endif //MAXTEMP 3
 
 #ifdef BED_MINTEMP
   bed_minttemp = temp2analogBed(BED_MINTEMP);
@@ -723,6 +746,14 @@ void disable_heater()
     soft_pwm[2]=0;
     #if HEATER_2_PIN > -1  
       WRITE(HEATER_2_PIN,LOW);
+    #endif
+  #endif 
+  
+  #if TEMP_3_PIN > -1
+    target_raw[3]=0;
+    soft_pwm[3]=0;
+    #if HEATER_3_PIN > -1  
+      WRITE(HEATER_3_PIN,LOW);
     #endif
   #endif 
 
@@ -826,12 +857,14 @@ ISR(TIMER0_COMPB_vect)
   static unsigned long raw_temp_0_value = 0;
   static unsigned long raw_temp_1_value = 0;
   static unsigned long raw_temp_2_value = 0;
+  static unsigned long raw_temp_3_value = 0;
   static unsigned long raw_temp_bed_value = 0;
   static unsigned char temp_state = 0;
   static unsigned char pwm_count = 1;
   static unsigned char soft_pwm_0;
   static unsigned char soft_pwm_1;
   static unsigned char soft_pwm_2;
+  static unsigned char soft_pwm_3;
   
   if(pwm_count == 0){
     soft_pwm_0 = soft_pwm[0];
@@ -844,6 +877,10 @@ ISR(TIMER0_COMPB_vect)
     soft_pwm_2 = soft_pwm[2];
     if(soft_pwm_2 > 0) WRITE(HEATER_2_PIN,1);
     #endif
+    #if EXTRUDERS > 3
+    soft_pwm_3 = soft_pwm[3];
+    if(soft_pwm_3 > 0) WRITE(HEATER_3_PIN,1);
+    #endif
   }
   if(soft_pwm_0 <= pwm_count) WRITE(HEATER_0_PIN,0);
   #if EXTRUDERS > 1
@@ -851,6 +888,9 @@ ISR(TIMER0_COMPB_vect)
   #endif
   #if EXTRUDERS > 2
   if(soft_pwm_2 <= pwm_count) WRITE(HEATER_2_PIN,0);
+  #endif
+  #if EXTRUDERS > 3
+  if(soft_pwm_3 <= pwm_count) WRITE(HEATER_3_PIN,0);
   #endif
   
   pwm_count++;
@@ -942,6 +982,27 @@ ISR(TIMER0_COMPB_vect)
       #if (TEMP_2_PIN > -1)
         raw_temp_2_value += ADC;
       #endif
+      temp_state = 8;
+      break;
+    case 8: // Prepare TEMP_2
+      #if (TEMP_2_PIN > -1)
+        #if TEMP_2_PIN > 7
+          ADCSRB = 1<<MUX5;
+        #else
+          ADCSRB = 0;
+        #endif
+        ADMUX = ((1 << REFS0) | (TEMP_2_PIN & 0x07));
+        ADCSRA |= 1<<ADSC; // Start conversion
+      #endif
+      #ifdef ULTIPANEL
+        buttons_check();
+      #endif
+      temp_state = 9;
+      break;
+    case 9: // Measure TEMP_2
+      #if (TEMP_2_PIN > -1)
+        raw_temp_2_value += ADC;
+      #endif
       temp_state = 0;
       temp_count++;
       break;
@@ -975,6 +1036,14 @@ ISR(TIMER0_COMPB_vect)
     #endif
 #endif
     
+#if EXTRUDERS > 3
+    #ifdef HEATER_3_USES_AD595
+      current_raw[3] = raw_temp_3_value;
+    #else
+      current_raw[3] = 16383 - raw_temp_3_value;
+    #endif
+#endif
+
     #ifdef BED_USES_AD595
       current_raw_bed = raw_temp_bed_value;
     #else
@@ -986,6 +1055,7 @@ ISR(TIMER0_COMPB_vect)
     raw_temp_0_value = 0;
     raw_temp_1_value = 0;
     raw_temp_2_value = 0;
+    raw_temp_3_value = 0;
     raw_temp_bed_value = 0;
 
     for(unsigned char e = 0; e < EXTRUDERS; e++) {

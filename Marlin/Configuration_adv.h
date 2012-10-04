@@ -271,6 +271,10 @@ const int dropsegments=5; //everything with less than this number of steps will 
   #define THERMISTORHEATER_2 TEMP_SENSOR_2
   #define HEATER_2_USES_THERMISTOR
 #endif
+#if TEMP_SENSOR_3 > 0
+  #define THERMISTORHEATER_3 TEMP_SENSOR_3
+  #define HEATER_3_USES_THERMISTOR
+#endif
 #if TEMP_SENSOR_BED > 0
   #define THERMISTORBED TEMP_SENSOR_BED
   #define BED_USES_THERMISTOR
@@ -283,6 +287,9 @@ const int dropsegments=5; //everything with less than this number of steps will 
 #endif
 #if TEMP_SENSOR_2 == -1
   #define HEATER_2_USES_AD595
+#endif
+#if TEMP_SENSOR_3 == -1
+  #define HEATER_3_USES_AD595
 #endif
 #if TEMP_SENSOR_BED == -1
   #define BED_USES_AD595
@@ -301,6 +308,10 @@ const int dropsegments=5; //everything with less than this number of steps will 
 #if TEMP_SENSOR_2 == 0
   #undef HEATER_2_MINTEMP
   #undef HEATER_2_MAXTEMP
+#endif
+#if TEMP_SENSOR_3 == 0
+  #undef HEATER_3_MINTEMP
+  #undef HEATER_3_MAXTEMP
 #endif
 #if TEMP_SENSOR_BED == 0
   #undef BED_MINTEMP
