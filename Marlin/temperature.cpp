@@ -400,15 +400,15 @@ void manage_heater()
   #endif
   
 
-		#ifndef PIDTEMPBED
+  #ifndef PIDTEMPBED
   if(millis() - previous_millis_bed_heater < BED_CHECK_INTERVAL)
     return;
   previous_millis_bed_heater = millis();
-    #endif
+  #endif //PIDTEMPBED
 
   #if TEMP_BED_PIN > -1
   
-		#ifdef PIDTEMPBED
+  #ifdef PIDTEMPBED
     pid_input = analog2tempBed(current_raw_bed);
 
     #ifndef PID_OPENLOOP
@@ -437,20 +437,19 @@ void manage_heater()
 	    soft_pwm_bed = 0;
 	  }
 
-    #elif not defined BED_LIMIT_SWITCHING
+    #elif not defined BED_LIMIT_SWITCHING //PIDTEMPBED
       // Check if temperature is within the correct range
       if((current_raw_bed > bed_minttemp) && (current_raw_bed < bed_maxttemp)) {
         if(current_raw_bed >= target_raw_bed)
         {
-					soft_pwm_bed = 0;
+           WRITE(HEATER_BED_PIN,LOW);
         }
         else 
         {
-					soft_pwm_bed = MAX_BED_POWER>>1;
+           WRITE(HEATER_BED_PIN,HIGH);
         }
       }
       else {
-					soft_pwm_bed = 0;
         WRITE(HEATER_BED_PIN,LOW);
       }
     #else //#ifdef BED_LIMIT_SWITCHING
@@ -458,16 +457,14 @@ void manage_heater()
       if((current_raw_bed > bed_minttemp) && (current_raw_bed < bed_maxttemp)) {
         if(current_raw_bed > target_bed_high_temp)
         {
-					soft_pwm_bed = 0;
+           WRITE(HEATER_BED_PIN,LOW);
         }
-        else 
-          if(current_raw_bed <= target_bed_low_temp)
+        else if(current_raw_bed <= target_bed_low_temp)
         {
-					soft_pwm_bed = MAX_BED_POWER>>1;
+          WRITE(HEATER_BED_PIN,HIGH);
         }
       }
       else {
-					soft_pwm_bed = 0;
         WRITE(HEATER_BED_PIN,LOW);
       }
     #endif
@@ -926,8 +923,10 @@ ISR(TIMER0_COMPB_vect)
     if(soft_pwm_2 > 0) WRITE(HEATER_2_PIN,1);
     #endif
     #if HEATER_BED_PIN > -1
+    #ifdef PIDTEMPBED
     soft_pwm_b = soft_pwm_bed;
     if(soft_pwm_b > 0) WRITE(HEATER_BED_PIN,1);
+    #endif
     #endif
   }
   if(soft_pwm_0 <= pwm_count) WRITE(HEATER_0_PIN,0);
@@ -938,7 +937,9 @@ ISR(TIMER0_COMPB_vect)
   if(soft_pwm_2 <= pwm_count) WRITE(HEATER_2_PIN,0);
   #endif
   #if HEATER_BED_PIN > -1
+  #ifdef PIDTEMPBED
   if(soft_pwm_b <= pwm_count) WRITE(HEATER_BED_PIN,0);
+  #endif
   #endif
   
   pwm_count++;
