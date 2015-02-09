@@ -3535,7 +3535,7 @@ bool IsStopped() { return Stopped; };
 void setPwmFrequency(uint8_t pin, int val)
 {
   val &= 0x07;
-  switch(digitalPinToTimer(pin))
+  switch(digitalPinHasPWM(pin))
   {
 
     #if defined(TCCR0A)
