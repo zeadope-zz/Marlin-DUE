@@ -126,20 +126,20 @@ static void lcd_implementation_init()
 			// RepRap init bmp
 			u8g.drawBitmapP(0,0,START_BMPBYTEWIDTH,START_BMPHEIGHT,start_bmp);
 			// Welcome message
-			u8g.setFont(u8g_font_6x10_marlin);
-			u8g.drawStr(62,10,"MARLIN"); 
 			u8g.setFont(u8g_font_5x8);
-			u8g.drawStr(62,19,"V1.0.0 RC2-mm");
-			u8g.setFont(u8g_font_6x10_marlin);
-			u8g.drawStr(62,28,"by ErikZalm");
-			u8g.drawStr(62,41,"DOGM128 LCD");
-			u8g.setFont(u8g_font_5x8);
-			u8g.drawStr(62,48,"enhancements");
-			u8g.setFont(u8g_font_5x8);
-			u8g.drawStr(62,55,"by STB, MM");
-			u8g.drawStr(62,61,"uses u");
-			u8g.drawStr90(92,57,"8");
-			u8g.drawStr(100,61,"glib");
+			u8g.drawStr(62,8,"z3Dope"); 
+//			u8g.setFont(u8g_font_5x8);
+			u8g.drawStr(62,17,"Prusa i3");
+//			u8g.setFont(u8g_font_6x10_marlin);
+			u8g.drawStr(62,26,"Prometheus");
+			u8g.drawStr(62,35,"RAMPS-FD on");
+//			u8g.setFont(u8g_font_5x8);
+			u8g.drawStr(62,44,"Arduino Due");
+//			u8g.setFont(u8g_font_5x8);
+			u8g.drawStr(62,53,"Wantai 0.9");
+			u8g.drawStr(62,61,"DRV8825 1/32");
+//			u8g.drawStr90(92,57,"8");
+//			u8g.drawStr(100,61,"glib");
 	   } while( u8g.nextPage() );
 }
 
